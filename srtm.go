@@ -40,28 +40,3 @@ func NewSRTMImage(r io.Reader, format SRTMFormat) (*SRTMImage, error) {
 	err := binary.Read(r, SRTMByteOrder, data)
 	return &SRTMImage{data, format}, err
 }
-
-// MinMaxElevation returns the minimum and maximum elevation values.
-// Values may be erroneous, because of voids or other invalid data.
-func (s *SRTMImage) MinMaxElevation() (min int16, max int16) {	
-	for _, v := range s.Data {
-		if v < min {
-			min = v
-		}
-		if v > max {
-			max = v
-		}
-	}
-	return
-}
-
-// MeanElevation returns the mean elevation value.
-// Overflows are mitigated. Thus may not be the actual mean.
-func (s *SRTMImage) MeanElevation() int16 {
-	var avg = 0
-
-	for i, v := range s.Data {
-		avg += (int(v)-avg) / (i+1)
-	}
-	return int16(avg)
-}
