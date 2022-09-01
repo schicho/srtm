@@ -22,3 +22,5 @@ The cmd subdirectory contains simple scripts to convert the SRTM data to gray sc
 ## Docs
 
 The docs subdirectory contains NASA's SRTM documentation, which can currently be found on the Web Archive as the webpage does not exist anymore.
+
+![Employee data](example_N48E12.jpg?raw=true "Example data from N48E12 showing the large river valleys of the Danube, Isar and Inn.")
