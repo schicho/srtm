@@ -44,9 +44,14 @@ func (s *SRTMImage) ElevationAt(x, y int) int16 {
 
 // MinMaxElevation returns the minimum and maximum elevation values.
 // Values may be erroneous, because of voids or other invalid data.
-func (s *SRTMImage) MinMaxElevation() (min int16, max int16) {	
+func (s *SRTMImage) MinMaxElevation() (min int16, max int16) {
+	// Do not forget to initialize min and max
+	min = 32767
+	max = -32768
+
 	for _, v := range s.Data {
-		if v < min {
+		// avoid letting voids influence the min/max
+		if v < min && v != -32768 {
 			min = v
 		}
 		if v > max {
