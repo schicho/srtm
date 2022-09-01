@@ -1,5 +1,12 @@
 # SRTM Library
 
+## Introduction
+
+The Shuttle Radar Topography Mission (SRTM) was a NASA mission to provide digital elevation data for the entire world.
+The data is free and available for use by anyone.
+A good place to find data is on this [website](http://viewfinderpanoramas.org/dem3.html).
+
+
 This library provides simple functions to read and convert SRTM data.
 Both the SRTM1 and SRTM3 data are supported.
 
