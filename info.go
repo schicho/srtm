@@ -32,9 +32,14 @@ func (s *SRTMImage) IndexToCoordinates(index int) (x, y int) {
 	return
 }
 
+// CoordinatesToIndex converts x,y coordinates to an index to the data array.
+func (s *SRTMImage) CoordinatesToIndex(x, y int) int {
+	return y*s.Format.Size() + x
+}
+
 // ElevationAt returns the elevation value at the given coordinates.
 func (s *SRTMImage) ElevationAt(x, y int) int16 {
-	return s.Data[y*s.Format.Size()+x]
+	return s.Data[s.CoordinatesToIndex(x, y)]
 }
 
 // MinMaxElevation returns the minimum and maximum elevation values.
