@@ -11,11 +11,11 @@ var ErrIndexOutOfBounds = errors.New("index out of bounds for SRTM image format"
 
 // DataVoidIndices returns points of all voids in the srtmImage.
 // Data voids are represented by the value -32768 as per the SRTM documentation.
-func (s *SRTMImage) DataVoidPoints() []image.Point {
+func (srtmImg *SRTMImage) DataVoidPoints() []image.Point {
 	var points []image.Point
-	for i, v := range s.Data {
+	for i, v := range srtmImg.Data {
 		if v == -32768 {
-			point, _ := IndexToCoordinates(i, s.Format)
+			point, _ := IndexToCoordinates(i, srtmImg.Format)
 			points = append(points, point)
 		}
 	}
@@ -25,12 +25,12 @@ func (s *SRTMImage) DataVoidPoints() []image.Point {
 // MinMaxElevation returns the minimum and maximum elevation values.
 // Data voids are ignored and not interpreted as minimum.
 // Values may be erroneous, because of other invalid data.
-func (s *SRTMImage) MinMaxElevation() (min int16, max int16) {
+func (srtmImg *SRTMImage) MinMaxElevation() (min int16, max int16) {
 	// do not forget to initialize min and max
 	min = 32767
 	max = -32768
 
-	for _, v := range s.Data {
+	for _, v := range srtmImg.Data {
 		// avoid letting voids influence the min/max
 		if v < min && v != -32768 {
 			min = v
@@ -45,10 +45,10 @@ func (s *SRTMImage) MinMaxElevation() (min int16, max int16) {
 // MeanElevation returns the mean elevation value.
 // Overflows as well as voids are mitigated.
 // Thus may not be the actual mean.
-func (s *SRTMImage) MeanElevation() int16 {
+func (srtmImg *SRTMImage) MeanElevation() int16 {
 	var avg = 0
 
-	for i, v := range s.Data {
+	for i, v := range srtmImg.Data {
 		// avoid adding voids, by just adding the average
 		if v == -32768 {
 			v = int16(avg)
@@ -59,12 +59,12 @@ func (s *SRTMImage) MeanElevation() int16 {
 }
 
 // ElevationAt returns the elevation value at the given coordinates.
-func (s *SRTMImage) ElevationAt(point image.Point) (int16, error) {
-	index, err := CoordinatesToIndex(point, s.Format)
+func (srtmImg *SRTMImage) ElevationAt(point image.Point) (int16, error) {
+	index, err := CoordinatesToIndex(point, srtmImg.Format)
 	if err != nil {
 		return -1, err
 	}
-	return s.Data[index], nil
+	return srtmImg.Data[index], nil
 }
 
 // IndexToCoordinates converts an index into the data array of a SRTMImage
