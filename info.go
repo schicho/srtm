@@ -1,5 +1,9 @@
 package srtm
 
+import (
+	"image"
+)
+
 // CountDataVoids returns the number of voids in the data.
 // Data voids are represented by the value -32768 as per the SRTM documentation.
 func (s *SRTMImage) CountDataVoids() int {
@@ -25,21 +29,35 @@ func (s *SRTMImage) DataVoidIndices() []int {
 	return indices
 }
 
-// IndexToCoordinates converts an index to the data array to x,y coordinates.
-func (s *SRTMImage) IndexToCoordinates(index int) (x, y int) {
-	x = index % s.Format.Size()
-	y = index / s.Format.Size()
-	return
+// IndexToCoordinates converts an index into the data array of the given SRTMImage
+// to x,y coordinates.
+func (srtmImg *SRTMImage) IndexToCoordinates(index int) image.Point {
+	return IndexToCoordinates(index, srtmImg.Format)
 }
 
-// CoordinatesToIndex converts x,y coordinates to an index to the data array.
-func (s *SRTMImage) CoordinatesToIndex(x, y int) int {
-	return y*s.Format.Size() + x
+// IndexToCoordinates converts an index into the data array of a SRTMImage
+// with the given format to x,y coordinates.
+func IndexToCoordinates(index int, format SRTMFormat) image.Point {
+	x := index % format.Size()
+	y := index / format.Size()
+	return image.Point{x, y}
+}
+
+// CoordinatesToIndex converts x,y coordinates to an index into the data array
+// for the given SRTMImage.
+func (srtmImg *SRTMImage) CoordinatesToIndex(point image.Point) int {
+	return CoordinatesToIndex(point, srtmImg.Format)
+}
+
+// CoordinatesToIndex converts x,y coordinates to an index into the data array
+// for the given SRTM format.
+func CoordinatesToIndex(point image.Point, format SRTMFormat) int {
+	return point.Y*format.Size() + point.X
 }
 
 // ElevationAt returns the elevation value at the given coordinates.
 func (s *SRTMImage) ElevationAt(x, y int) int16 {
-	return s.Data[s.CoordinatesToIndex(x, y)]
+	return s.Data[s.CoordinatesToIndex(image.Point{x, y})]
 }
 
 // MinMaxElevation returns the minimum and maximum elevation values.
@@ -72,7 +90,7 @@ func (s *SRTMImage) MeanElevation() int16 {
 		if v == -32768 {
 			v = int16(avg)
 		}
-		avg += (int(v)-avg) / (i+1)
+		avg += (int(v) - avg) / (i + 1)
 	}
 	return int16(avg)
 }
