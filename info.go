@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"image"
+	"sort"
 )
 
 var ErrPointOutOfBounds = errors.New("point out of bounds for SRTM image format")
@@ -11,7 +12,7 @@ var ErrIndexOutOfBounds = errors.New("index out of bounds for SRTM image format"
 
 // DataVoidIndices returns points of all voids in the srtmImage.
 // Data voids are represented by the value -32768 as per the SRTM documentation.
-func (srtmImg *SRTMImage) DataVoidPoints() []image.Point {
+func (srtmImg *SRTMImage) ElevationVoids() []image.Point {
 	var points []image.Point
 	for i, v := range srtmImg.Data {
 		if v == -32768 {
@@ -22,10 +23,10 @@ func (srtmImg *SRTMImage) DataVoidPoints() []image.Point {
 	return points
 }
 
-// MinMaxElevation returns the minimum and maximum elevation values.
+// ElevationMinMax returns the minimum and maximum elevation values.
 // Data voids are ignored and not interpreted as minimum.
 // Values may be erroneous, because of other invalid data.
-func (srtmImg *SRTMImage) MinMaxElevation() (min int16, max int16) {
+func (srtmImg *SRTMImage) ElevationMinMax() (min int16, max int16) {
 	// do not forget to initialize min and max
 	min = 32767
 	max = -32768
@@ -42,10 +43,10 @@ func (srtmImg *SRTMImage) MinMaxElevation() (min int16, max int16) {
 	return
 }
 
-// MeanElevation returns the mean elevation value.
+// ElevationMean returns the mean elevation value.
 // Overflows as well as voids are mitigated.
 // Thus may not be the actual mean.
-func (srtmImg *SRTMImage) MeanElevation() int16 {
+func (srtmImg *SRTMImage) ElevationMean() int16 {
 	var avg = 0
 
 	for i, v := range srtmImg.Data {
@@ -65,6 +66,25 @@ func (srtmImg *SRTMImage) ElevationAt(point image.Point) (int16, error) {
 		return -1, err
 	}
 	return srtmImg.Data[index], nil
+}
+
+// ElevationPercentile returns the nearest-ranked percentile of the elevation values.
+// Percentile must be between 0 and 1.
+// Data voids are not ignored and part of the percentile calculation.
+func (srtmImg *SRTMImage) ElevationPercentile(percentile float64) int16 {
+	if percentile < 0 || percentile > 1 {
+		panic(fmt.Sprintf("percentile must be between 0 and 1, but was %f", percentile))
+	}
+	data := make([]int16, len(srtmImg.Data))
+	copy(data, srtmImg.Data)
+	sort.Slice(data, func(i, j int) bool { return data[i] < data[j] })
+
+	if percentile == 1 {
+		return data[len(data)-1]
+	}
+
+	index := int(float64(len(data)) * percentile)
+	return data[index]
 }
 
 // IndexToCoordinates converts an index into the data array of a SRTMImage

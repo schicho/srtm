@@ -11,7 +11,7 @@ import (
 // If there are values too large or too small, these values will be set to white or black, respectively.
 // Values may be erroneous, because of voids or other invalid data.
 func (srtmImg *SRTMImage) MeanCenteredImage() *image.Gray {
-	mean := srtmImg.MeanElevation()
+	mean := srtmImg.ElevationMean()
 	return heightCenteredImage(srtmImg, mean)
 }
 
