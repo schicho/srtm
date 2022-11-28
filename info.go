@@ -1,8 +1,13 @@
 package srtm
 
 import (
+	"errors"
+	"fmt"
 	"image"
 )
+
+var ErrPointOutOfBounds = errors.New("point out of bounds of SRTMImage")
+var ErrIndexOutOfBounds = errors.New("index out of bounds of SRTMImage")
 
 // DataVoidIndices returns points of all voids in the srtmImage.
 // Data voids are represented by the value -32768 as per the SRTM documentation.
@@ -10,7 +15,8 @@ func (s *SRTMImage) DataVoidPoints() []image.Point {
 	var points []image.Point
 	for i, v := range s.Data {
 		if v == -32768 {
-			points = append(points, s.IndexToCoordinates(i))
+			point, _ := IndexToCoordinates(i, s.Format)
+			points = append(points, point)
 		}
 	}
 	return points
@@ -52,33 +58,41 @@ func (s *SRTMImage) MeanElevation() int16 {
 	return int16(avg)
 }
 
-// IndexToCoordinates converts an index into the data array of the given SRTMImage
-// to x,y coordinates.
-func (srtmImg *SRTMImage) IndexToCoordinates(index int) image.Point {
-	return IndexToCoordinates(index, srtmImg.Format)
+// ElevationAt returns the elevation value at the given coordinates.
+func (s *SRTMImage) ElevationAt(point image.Point) (int16, error) {
+	index, err := CoordinatesToIndex(point, s.Format)
+	if err != nil {
+		return -1, err
+	}
+	return s.Data[index], nil
 }
 
 // IndexToCoordinates converts an index into the data array of a SRTMImage
 // with the given format to x,y coordinates.
-func IndexToCoordinates(index int, format SRTMFormat) image.Point {
+func IndexToCoordinates(index int, format SRTMFormat) (image.Point, error) {
+	if !IsIndexInBounds(index, format) {
+		return image.Point{}, fmt.Errorf("%w: %v, index: %v", ErrIndexOutOfBounds, format, index)
+	}
 	x := index % format.Size()
 	y := index / format.Size()
-	return image.Point{x, y}
+	return image.Point{x, y}, nil
 }
 
 // CoordinatesToIndex converts x,y coordinates to an index into the data array
-// for the given SRTMImage.
-func (srtmImg *SRTMImage) CoordinatesToIndex(point image.Point) int {
-	return CoordinatesToIndex(point, srtmImg.Format)
+// for the given SRTMFormat.
+func CoordinatesToIndex(point image.Point, format SRTMFormat) (int, error) {
+	if !IsPointInBounds(point, format) {
+		return -1, fmt.Errorf("%w: %v, x: %v, y: %v", ErrPointOutOfBounds, format, point.X, point.Y)
+	}
+	return point.Y*format.Size() + point.X, nil
 }
 
-// CoordinatesToIndex converts x,y coordinates to an index into the data array
-// for the given SRTM format.
-func CoordinatesToIndex(point image.Point, format SRTMFormat) int {
-	return point.Y*format.Size() + point.X
+// IsPointInBounds checks if the given point is inside the data array of the given SRTMFormat.
+func IsPointInBounds(point image.Point, format SRTMFormat) bool {
+	return point.X >= 0 && point.X < format.Size() && point.Y >= 0 && point.Y < format.Size()
 }
 
-// ElevationAt returns the elevation value at the given coordinates.
-func (s *SRTMImage) ElevationAt(x, y int) int16 {
-	return s.Data[s.CoordinatesToIndex(image.Point{x, y})]
+// IsIndexInBounds returns true if the given index is inside the data array of the given SRTMFormat.
+func IsIndexInBounds(index int, format SRTMFormat) bool {
+	return index >= 0 && index < format.Size()*format.Size()
 }
