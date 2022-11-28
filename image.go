@@ -6,30 +6,35 @@ import (
 )
 
 // MeanCenteredImage centeres the elevation data to the mean elevation value.
-// No scaling is applied.
+// No scaling is applied. The calculated mean value corresponds to the value of 128 in the
+// resulting image. Smaller values are darker, larger values are brighter.
+// If there are values too large or too small, these values will be set to white or black, respectively.
 // Values may be erroneous, because of voids or other invalid data.
-func (s *SRTMImage) MeanCenteredImage() *image.Gray {
-	mean := s.MeanElevation()
-	return centerHeightImage(s.Data, s.Format, mean)
+func (srtmImg *SRTMImage) MeanCenteredImage() *image.Gray {
+	mean := srtmImg.MeanElevation()
+	return heightCenteredImage(srtmImg, mean)
 }
 
-// CenterHeightImage centeres the elevation data to the provided elevation value.
+// HeightCenteredImage centeres the elevation data to the provided elevation value.
+// No scaling is applied. The center value corresponds to the value of 128 in the
+// resulting image. Smaller values are darker, larger values are brighter.
+// If there are values too large or too small, these values will be set to white or black, respectively.
 // Values may be erroneous, because of voids or other invalid data.
-// No scaling is applied.
-// Takes a center value as input. This value will be centered to 128.
-// Large or small values may result in overflows or underflows.
-func (s *SRTMImage) CenterHeightImage(center int16) *image.Gray {
-	return centerHeightImage(s.Data, s.Format, center)
+func (srtmImg *SRTMImage) HeightCenteredImage(height int16) *image.Gray {
+	return heightCenteredImage(srtmImg, height)
 }
 
-// centerHeightImage centeres the elevation data to the provided elevation value.
-func centerHeightImage(data []int16, format SRTMFormat, center int16) *image.Gray {
-	rect := image.Rect(0, 0, format.Size(), format.Size())
+// heightCenteredImage centeres the elevation data to the provided elevation value.
+func heightCenteredImage(srtmImg *SRTMImage, height int16) *image.Gray {
+	rect := image.Rect(0, 0, srtmImg.Format.Size(), srtmImg.Format.Size())
 	img := image.NewGray(rect)
 
-	for i, v := range data {
-		// center the data to 128.
-		centeredValue := v - center + 128
+	height32 := int32(height)
+
+	for i, v := range srtmImg.Data {
+		// avoid overflows by using int32
+		// center value in the output image is 128
+		centeredValue := int32(v) - height32 + 128
 		if centeredValue < 0 {
 			centeredValue = 0
 		} else if centeredValue > 255 {
