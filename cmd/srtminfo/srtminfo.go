@@ -46,4 +46,9 @@ func main() {
 	fmt.Println("min/max values may be erroneous, because of voids or other invalid data")
 	fmt.Println("min:", min, "max:", max, "mean:", mean)
 	fmt.Println("count of data voids:", countDatavoids)
+
+	fmt.Println("elevation percentiles:")
+	for p := 0.0; p <= 1.0; p += 0.1 {
+		fmt.Printf("%.2f: %d\n", p, srtm.ElevationPercentile(p))
+	}
 }
