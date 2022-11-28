@@ -29,6 +29,16 @@ func (f SRTMFormat) Size() int {
 	return -1
 }
 
+func (f SRTMFormat) String() string {
+	switch f {
+	case SRTM1Format:
+		return "SRTM1"
+	case SRTM3Format:
+		return "SRTM3"
+	}
+	return "invalid format"
+}
+
 type SRTMImage struct {
 	Data   []int16
 	Format SRTMFormat

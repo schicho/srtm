@@ -6,8 +6,8 @@ import (
 	"image"
 )
 
-var ErrPointOutOfBounds = errors.New("point out of bounds of SRTMImage")
-var ErrIndexOutOfBounds = errors.New("index out of bounds of SRTMImage")
+var ErrPointOutOfBounds = errors.New("point out of bounds for SRTM image format")
+var ErrIndexOutOfBounds = errors.New("index out of bounds for SRTM image format")
 
 // DataVoidIndices returns points of all voids in the srtmImage.
 // Data voids are represented by the value -32768 as per the SRTM documentation.
@@ -82,7 +82,7 @@ func IndexToCoordinates(index int, format SRTMFormat) (image.Point, error) {
 // for the given SRTMFormat.
 func CoordinatesToIndex(point image.Point, format SRTMFormat) (int, error) {
 	if !IsPointInBounds(point, format) {
-		return -1, fmt.Errorf("%w: %v, x: %v, y: %v", ErrPointOutOfBounds, format, point.X, point.Y)
+		return -1, fmt.Errorf("%w: %v, point: %v", ErrPointOutOfBounds, format, point)
 	}
 	return point.Y*format.Size() + point.X, nil
 }
