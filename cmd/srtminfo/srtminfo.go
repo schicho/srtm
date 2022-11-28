@@ -42,7 +42,7 @@ func main() {
 	}
 	min, max := srtm.MinMaxElevation()
 	mean := srtm.MeanElevation()
-	countDatavoids := srtm.CountDataVoids()
+	countDatavoids := len(srtm.DataVoidPoints())
 	fmt.Println("min/max values may be erroneous, because of voids or other invalid data")
 	fmt.Println("min:", min, "max:", max, "mean:", mean)
 	fmt.Println("count of data voids:", countDatavoids)
