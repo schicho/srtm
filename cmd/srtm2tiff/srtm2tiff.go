@@ -35,7 +35,7 @@ func main() {
 	}
 
 	srtmImg, err := srtm.NewSRTMImage(f, format)
-	if err != nil {	
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
@@ -46,7 +46,7 @@ func main() {
 		os.Exit(1)
 	}
 	defer f_out.Close()
-	
+
 	err = tiff.Encode(f_out, srtmImg.FullImage(), nil)
 	if err != nil {
 		fmt.Println(err)

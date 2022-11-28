@@ -30,13 +30,12 @@ func (f SRTMFormat) Size() int {
 }
 
 type SRTMImage struct {
-	Data []int16
+	Data   []int16
 	Format SRTMFormat
 }
 
-
 func NewSRTMImage(r io.Reader, format SRTMFormat) (*SRTMImage, error) {
-	data := make([]int16, format.Size() * format.Size())
+	data := make([]int16, format.Size()*format.Size())
 	err := binary.Read(r, SRTMByteOrder, data)
 	return &SRTMImage{data, format}, err
 }

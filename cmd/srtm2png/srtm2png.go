@@ -25,7 +25,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	f_in, err := os.Open(*file) 
+	f_in, err := os.Open(*file)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -34,8 +34,10 @@ func main() {
 
 	var format srtm.SRTMFormat
 	switch *resolution {
-	case 1:	format = srtm.SRTM1Format
-	case 3:	format = srtm.SRTM3Format
+	case 1:
+		format = srtm.SRTM1Format
+	case 3:
+		format = srtm.SRTM3Format
 	}
 
 	srtm, err := srtm.NewSRTMImage(f_in, format)
@@ -43,14 +45,14 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	
+
 	f_out, err := os.Create("out.png")
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 	defer f_out.Close()
-	
+
 	err = png.Encode(f_out, srtm.MeanCenteredImage())
 	if err != nil {
 		fmt.Println(err)
