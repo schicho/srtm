@@ -17,7 +17,8 @@ func (s *SRTMImage) DataVoidPoints() []image.Point {
 }
 
 // MinMaxElevation returns the minimum and maximum elevation values.
-// Values may be erroneous, because of voids or other invalid data.
+// Data voids are ignored and not interpreted as minimum.
+// Values may be erroneous, because of other invalid data.
 func (s *SRTMImage) MinMaxElevation() (min int16, max int16) {
 	// do not forget to initialize min and max
 	min = 32767
@@ -36,7 +37,7 @@ func (s *SRTMImage) MinMaxElevation() (min int16, max int16) {
 }
 
 // MeanElevation returns the mean elevation value.
-// Overflows are mitigated. As well as voids.
+// Overflows as well as voids are mitigated.
 // Thus may not be the actual mean.
 func (s *SRTMImage) MeanElevation() int16 {
 	var avg = 0
