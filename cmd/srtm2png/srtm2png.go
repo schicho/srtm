@@ -1,61 +1,55 @@
 package main
 
 import (
-	"flag"
-	"fmt"
 	"image/png"
+	"log"
 	"os"
 
 	"github.com/schicho/srtm"
 )
 
 func main() {
-	file := flag.String("i", "", "specify the SRTM file")
-	resolution := flag.Int("r", 0, "specify the resolution of the SRTM data")
-	flag.Parse()
-
-	if len(os.Args) < 2 {
-		flag.Usage()
-		os.Exit(1)
-	}
-
-	if !(*resolution == 1 || *resolution == 3) {
-		flag.Usage()
-		fmt.Println("resolution must be 1 or 3")
-		os.Exit(1)
-	}
-
-	f_in, err := os.Open(*file)
+	f, err := os.Open(os.Args[1])
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
-	defer f_in.Close()
+	defer f.Close()
 
 	var format srtm.SRTMFormat
-	switch *resolution {
-	case 1:
-		format = srtm.SRTM1Format
-	case 3:
-		format = srtm.SRTM3Format
-	}
-
-	srtm, err := srtm.NewSRTMImage(f_in, format)
+	stat, err := f.Stat()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
+		os.Exit(1)
+	}
+	switch stat.Size() {
+	case 25934402:
+		log.Println("Assuming SRTM1 format")
+		format = srtm.SRTM1Format
+	case 2884802:
+		log.Println("assuming SRTM3 format")
+		format = srtm.SRTM3Format
+	default:
+		log.Println("unknown filesize. exiting")
 		os.Exit(1)
 	}
 
-	f_out, err := os.Create("out.png")
+	srtm, err := srtm.NewSRTMImage(f, format)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	f_out, err := os.Create(stat.Name() + "-out-8.png")
+	if err != nil {
+		log.Println(err)
 		os.Exit(1)
 	}
 	defer f_out.Close()
 
 	err = png.Encode(f_out, srtm.MeanCenteredImage())
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		os.Exit(1)
 	}
 }
