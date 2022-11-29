@@ -24,6 +24,31 @@ func (srtmImg *SRTMImage) HeightCenteredImage(height int16) *image.Gray {
 	return heightCenteredImage(srtmImg, height)
 }
 
+// ScaledHeightImage returns a grayscale image with the elevation data scaled to the provided factor.
+// The factor determines how many meters are represented by one brightness value.
+// The center height determines the elevation value that corresponds to the brightness value of 128.
+func (srtmImg *SRTMImage) ScaledHeightImage(factor, centerHeight int16) *image.Gray {
+	rect := image.Rect(0, 0, srtmImg.Format.Size(), srtmImg.Format.Size())
+	img := image.NewGray(rect)
+
+	factor32 := int32(factor)
+	height32 := int32(centerHeight) / factor32
+
+	for i, v := range srtmImg.Data {
+		v32 := (int32(v) / factor32) - height32 + 128
+
+		if v32 < 0 {
+			v32 = 0
+		}
+		if v32 > 255 {
+			v32 = 255
+		}
+		img.Pix[i] = uint8(v32)
+
+	}
+	return img
+}
+
 // heightCenteredImage centeres the elevation data to the provided elevation value.
 func heightCenteredImage(srtmImg *SRTMImage, height int16) *image.Gray {
 	rect := image.Rect(0, 0, srtmImg.Format.Size(), srtmImg.Format.Size())

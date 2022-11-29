@@ -34,7 +34,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	srtm, err := srtm.NewSRTMImage(f, format)
+	srtmImg, err := srtm.NewSRTMImage(f, format)
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
@@ -47,7 +47,9 @@ func main() {
 	}
 	defer f_out.Close()
 
-	err = png.Encode(f_out, srtm.MeanCenteredImage())
+	p4 := srtmImg.ElevationPercentile(0.04)
+	p95 := srtmImg.ElevationPercentile(0.95)
+	err = png.Encode(f_out, srtmImg.ScaledHeightImage(2, int16((p4+p95)/2)))
 	if err != nil {
 		log.Println(err)
 		os.Exit(1)
